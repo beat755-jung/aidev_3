@@ -1,0 +1,528 @@
+<title>topForce 영웅 도감</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 상단 작전 헤더 + 탭 → 화면 본문, 영웅 상세는 우측 패널(모바일 하단 시트) */
+:root {
+  --bg: #EEF1F3;
+  --surface: #FFFFFF;
+  --surface-2: #E3E8EC;
+  --line: #CDD5DC;
+  --fg: #16212B;
+  --muted: #56636F;
+  --accent: #0E6E78;
+  --on-accent: #FFFFFF;
+  --head: #1C2A35;
+  --on-head: #E8EEF2;
+  --r-ur: #C2570C; --r-ssr: #7A3FB0; --r-sr: #2563B8;
+  --t-1: #0E6E78; --t-2: #3C8A93; --t-3: #6CA7AE; --t-4: #9DC4C9;
+  --font-display: "Chakra Petch", "IBM Plex Sans KR", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B; --surface: #16212A; --surface-2: #1E2B36; --line: #2C3B48;
+    --fg: #E4EAEF; --muted: #93A2AF; --accent: #4CC3CE; --on-accent: #062226;
+    --head: #0A1015; --on-head: #E4EAEF;
+    --r-ur: #FF9A4D; --r-ssr: #C08AF0; --r-sr: #6EA8FF;
+    --t-1: #4CC3CE; --t-2: #3A9AA3; --t-3: #2D7880; --t-4: #245A61;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B; --surface: #16212A; --surface-2: #1E2B36; --line: #2C3B48;
+  --fg: #E4EAEF; --muted: #93A2AF; --accent: #4CC3CE; --on-accent: #062226;
+  --head: #0A1015; --on-head: #E4EAEF;
+  --r-ur: #FF9A4D; --r-ssr: #C08AF0; --r-sr: #6EA8FF;
+  --t-1: #4CC3CE; --t-2: #3A9AA3; --t-3: #2D7880; --t-4: #245A61;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.55; }
+h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.25; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--head); }
+.head { background: var(--head); color: var(--on-head); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.head .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 12px 0; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: .04em; }
+.brand span { font-size: 12px; opacity: .75; }
+.src { font-size: 12px; opacity: .8; }
+.icon-btn { height: 34px; padding: 0 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: var(--on-head); cursor: pointer; }
+.tabs { display: flex; gap: 4px; width: 100%; overflow-x: auto; }
+.tabs a { padding: 10px 16px; color: var(--on-head); opacity: .7; text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tabs a:hover { opacity: 1; }
+.tabs a[aria-current="page"] { opacity: 1; border-color: var(--accent); }
+
+main.wrap { padding-block: 20px 48px; display: grid; gap: 18px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 12px; }
+.panel h2 { font-size: 16px; }
+.sub { font-size: 12px; color: var(--muted); }
+.view { display: grid; gap: 18px; }
+
+/* Filters */
+.filters { display: grid; gap: 12px; }
+.frow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.flabel { font-size: 12px; font-weight: 600; color: var(--muted); width: 44px; letter-spacing: .04em; }
+.chip { height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 13px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip:hover { border-color: var(--accent); }
+.frow select, .frow input { height: 32px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); padding: 0 10px; min-width: 0; }
+.frow input { flex: 1 1 200px; }
+.btn { height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { height: 30px; padding: 0 12px; border: 0; background: var(--surface); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); font-weight: 600; }
+.count { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* Badges */
+.rar { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 4px; font-family: var(--font-display); font-size: 12px; font-weight: 700; border: 1.5px solid currentColor; }
+.rar-UR { color: var(--r-ur); } .rar-SSR { color: var(--r-ssr); } .rar-SR { color: var(--r-sr); }
+.tier { display: inline-grid; place-items: center; min-width: 32px; height: 24px; padding: 0 6px; border-radius: 4px; font-family: var(--font-display); font-weight: 700; font-size: 13px; background: var(--surface-2); }
+.tier.t1 { background: var(--t-1); color: var(--on-accent); } .tier.t2 { background: var(--t-2); color: var(--on-accent); }
+.tier.t3 { background: var(--t-3); color: var(--fg); } .tier.t4 { background: var(--t-4); color: var(--fg); }
+.cls { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+.cls svg { width: 16px; height: 16px; }
+.av { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 17px; background: var(--surface-2); border: 2px solid currentColor; flex: none; }
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; cursor: pointer; }
+.card:hover { border-color: var(--accent); }
+.card .top { display: flex; gap: 10px; align-items: center; }
+.card .name { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.card .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.card .note { font-size: 13px; color: var(--muted); }
+.card .tier { margin-left: auto; }
+
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 12px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tbody tr { cursor: pointer; } tbody tr:hover td { background: var(--surface-2); }
+.empty { padding: 32px; text-align: center; color: var(--muted); }
+
+/* Tier matrix */
+.matrix-scroll { overflow-x: auto; }
+.matrix { display: grid; grid-template-columns: 64px repeat(3, minmax(200px, 1fr)); min-width: 680px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.matrix > div { padding: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+.matrix .mh { background: var(--surface-2); font-weight: 600; font-size: 13px; align-items: center; border-top: 0; }
+.matrix .mt { border-left: 0; align-items: center; justify-content: center; }
+.matrix .corner { border: 0; background: var(--surface-2); }
+.hchip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px; border-radius: 14px; border: 1.5px solid currentColor; background: var(--surface); cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 13px; transition: opacity .2s; }
+.hchip b { font-size: 10px; }
+.hchip span { color: var(--fg); }
+.hchip.dim { opacity: .22; }
+.tier-list { display: none; }
+
+/* Stats */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.kpi .l { font-size: 12px; color: var(--muted); font-weight: 600; }
+.kpi .v { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1.15; }
+.kpi .v small { font-size: 14px; color: var(--muted); margin-left: 2px; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+.sbars { display: grid; gap: 10px; }
+.sbar { display: grid; grid-template-columns: 52px 1fr 30px; gap: 10px; align-items: center; font-size: 13px; }
+.strack { display: flex; height: 22px; border-radius: 4px; overflow: hidden; background: var(--surface-2); }
+.sseg { height: 100%; border: 0; padding: 0; cursor: pointer; transform-origin: left; transition: transform .7s ease-out, filter .15s; }
+.sseg:hover { filter: brightness(1.15); }
+.seg-UR { background: var(--r-ur); } .seg-SSR { background: var(--r-ssr); } .seg-SR { background: var(--r-sr); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin-top: 12px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.donut-wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.donut { width: 150px; height: 150px; flex: none; }
+.donut circle.arc { fill: none; stroke-width: 20; cursor: pointer; transition: stroke-dasharray .7s ease-out; }
+.donut text { fill: var(--fg); font-family: var(--font-display); }
+.rlist { display: grid; gap: 8px; }
+.rlist button { all: unset; cursor: pointer; display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.rlist button:focus-visible { outline: 2px solid var(--accent); }
+.avg { display: grid; gap: 12px; }
+.avg-row { display: grid; grid-template-columns: 52px 1fr 44px; gap: 10px; align-items: center; }
+.avg-track { height: 10px; border-radius: 5px; background: var(--surface-2); position: relative; }
+.avg-fill { position: absolute; inset: 0; border-radius: 5px; background: var(--accent); transform-origin: left; transition: transform .7s ease-out; }
+.scale { display: grid; grid-template-columns: 52px 1fr 44px; gap: 10px; font-size: 11px; color: var(--muted); }
+.scale div:nth-child(2) { display: flex; justify-content: space-between; }
+
+/* Detail */
+.detail { position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100%); background: var(--surface); border-left: 1px solid var(--line); z-index: 30;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 18px) 18px;
+  overflow-y: auto; box-shadow: -12px 0 32px rgba(8, 16, 24, .18); animation: slideIn .2s ease-out; display: grid; gap: 14px; align-content: start; }
+@keyframes slideIn { from { transform: translateX(24px); opacity: .5; } to { transform: none; opacity: 1; } }
+.detail .close { justify-self: end; }
+.detail .dname { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.dl { display: grid; grid-template-columns: 64px 1fr; gap: 8px 12px; font-size: 13px; }
+.dl dt { color: var(--muted); } .dl dd { margin: 0; }
+.dnote { padding: 12px; border-radius: 6px; background: var(--surface-2); }
+.related { display: flex; flex-wrap: wrap; gap: 6px; }
+.scrim { position: fixed; inset: 0; background: rgba(8, 16, 24, .35); z-index: 29; }
+
+footer { font-size: 12px; color: var(--muted); padding-block: 0 28px; }
+footer a { color: var(--accent); }
+
+@media (max-width: 720px) {
+  .matrix-scroll { display: none; }
+  .tier-list { display: grid; gap: 14px; }
+  .tier-list h3 { font-size: 14px; margin-bottom: 6px; }
+  .tl-row { display: grid; grid-template-columns: 40px 1fr; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .tl-row > div { display: flex; flex-wrap: wrap; gap: 6px; }
+  .detail { top: auto; width: 100%; max-height: 78vh; border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
+    padding-left: max(18px, env(safe-area-inset-left, 0px)); animation-name: sheetIn; }
+  @keyframes sheetIn { from { transform: translateY(30px); opacity: .5; } to { transform: none; opacity: 1; } }
+  .src { width: 100%; order: 3; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<header class="head">
+  <div class="wrap">
+    <div class="brand"><h1>TOP FORCE</h1><span>영웅 대시보드</span></div>
+    <span class="src">출처 AllClash 티어 목록 · 2026-11-08 갱신 · 2026-11-23 수집 · 공식 데이터 아님</span>
+    <button class="icon-btn" id="theme-toggle" type="button">🌙 다크</button>
+    <nav class="tabs" aria-label="화면">
+      <a href="#heroes" data-view="heroes">영웅 도감</a>
+      <a href="#tiers" data-view="tiers">티어표</a>
+      <a href="#stats" data-view="stats">분포 차트</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<footer class="wrap">
+  티어와 특징은 팬 공략 사이트 <a href="https://www.allclash.com/best-heroes-in-top-force-tier-list/" target="_blank" rel="noopener">AllClash · Best Heroes in Top Force – Tier List</a>의 평가를 요약·번역한 것입니다. 게임 업데이트에 따라 달라질 수 있습니다.
+</footer>
+<div id="detail-root"></div>
+
+<script type="application/json" id="hero-data">{"source":{"title":"Best Heroes in Top Force – Tier List (AllClash)","url":"https://www.allclash.com/best-heroes-in-top-force-tier-list/","pageUpdated":"2026-11-08","collected":"2026-11-23","note":"팬 공략 사이트의 티어 평가입니다. 특징(note)은 원문을 요약·번역한 것이며 공식 데이터가 아닙니다. 31명 수록."},"heroes":[{"name":"Zakarov","rarity":"UR","class":"보병","role":"공격","tier":"S+","note":"다수 대상 공격 딜러"},{"name":"Rasim","rarity":"UR","class":"보병","role":"버프","tier":"S","note":"아군 전체 강력 버프, 아군 스탯 비례"},{"name":"Logan","rarity":"UR","class":"보병","role":"방어","tier":"A+","note":"피해 경감이 큼, 유료 영웅"},{"name":"Natalie","rarity":"UR","class":"보병","role":"공격","tier":"A","note":"초반 강하지만 1~2시즌 후 화력 밀림"},{"name":"Cameron","rarity":"UR","class":"보병","role":"방어","tier":"A+","note":"전열 탱커, 아군 받는 피해 경감"},{"name":"Victor","rarity":"SSR","class":"보병","role":"공격","tier":"A","note":"초반 화력 우수, 몬스터 사냥에 적합"},{"name":"Cassia","rarity":"SSR","class":"보병","role":"공격","tier":"B+","note":"초반 팀에 무난, 후반용 아님"},{"name":"Alexander","rarity":"SSR","class":"보병","role":"방어","tier":"C+","note":"탱커로 부족, 일찍 교체 권장"},{"name":"Seiya","rarity":"SSR","class":"보병","role":"공격","tier":"B+","note":"직접 딜, 초반에 더 유용"},{"name":"Sparks","rarity":"SSR","class":"보병","role":"방어","tier":"C+","note":"몬스터 사냥 위주, 생존력 약함"},{"name":"Andrew","rarity":"SSR","class":"보병","role":"공격","tier":"B","note":"준수한 딜, 빠르게 밀림"},{"name":"Marcus","rarity":"SR","class":"보병","role":"공격","tier":"D","note":"극초반 임시 영웅"},{"name":"Colton","rarity":"SR","class":"보병","role":"공격","tier":"D","note":"극초반 임시 영웅"},{"name":"Lily","rarity":"UR","class":"전차","role":"방어","tier":"A+","note":"전열·팀 피해 감소, 에너지 피해에 특히 강함"},{"name":"Boone","rarity":"UR","class":"전차","role":"공격","tier":"S+","note":"매우 높은 화력, 전차 덱 핵심"},{"name":"Mira","rarity":"UR","class":"전차","role":"공격","tier":"S","note":"높은 화력 + 기절"},{"name":"Nova","rarity":"UR","class":"전차","role":"공격","tier":"A+","note":"매우 좋은 화력"},{"name":"Grayson","rarity":"UR","class":"전차","role":"방어","tier":"A","note":"쓸 만하나 팀 기여 적음"},{"name":"Rosa","rarity":"SSR","class":"전차","role":"공격","tier":"C+","note":"몬스터 사냥용"},{"name":"Isabelle","rarity":"SSR","class":"전차","role":"공격","tier":"B","note":"교체 전까지 초반 임시"},{"name":"Bill","rarity":"SSR","class":"전차","role":"방어","tier":"B+","note":"전열 방어력 % 증가, UR과도 유효"},{"name":"Samantha","rarity":"SR","class":"전차","role":"방어","tier":"D","note":"극초반 임시 영웅"},{"name":"Travis","rarity":"UR","class":"헬기","role":"방어","tier":"S","note":"피해 경감 우수, 도발은 빌드 잘못 시 역효과"},{"name":"Brock","rarity":"UR","class":"헬기","role":"방어","tier":"S+","note":"반격 효과 매우 강력"},{"name":"Daisy","rarity":"UR","class":"헬기","role":"공격","tier":"A","note":"준수한 딜, 다른 UR보다 아쉬움"},{"name":"Dash","rarity":"UR","class":"헬기","role":"공격","tier":"A+","note":"충분한 딜, 상위 UR엔 못 미침"},{"name":"Amy","rarity":"UR","class":"헬기","role":"공격","tier":"S+","note":"후열 타격 능력 탁월"},{"name":"Raffa","rarity":"SSR","class":"헬기","role":"방어","tier":"C+","note":"몬스터 사냥용"},{"name":"Holland","rarity":"SSR","class":"헬기","role":"공격","tier":"B","note":"몬스터 관련 스킬 제외하면 무난"},{"name":"Brianna","rarity":"SSR","class":"헬기","role":"공격","tier":"B+","note":"SSR 중 준수한 딜"},{"name":"Luke","rarity":"SR","class":"헬기","role":"공격","tier":"D","note":"극초반 임시 영웅"}]}</script>
+
+<script>
+/* LOGIC-START : DOM 없는 순수 로직 (tests/logic.test.js 에서 검증) */
+var Logic = (function () {
+  var TIER_ORDER = ["S+", "S", "A+", "A", "B+", "B", "C+", "D"];
+  var RARITY_ORDER = ["UR", "SSR", "SR"];
+  var CLASSES = ["보병", "전차", "헬기"];
+  var ROLES = ["공격", "방어", "버프"];
+
+  function tierScore(t) { var i = TIER_ORDER.indexOf(t); return i < 0 ? 0 : TIER_ORDER.length - i; } // S+=8 … D=1
+
+  /* f: { rarity:[], cls:[], role:[], tier:[], minTier:"A", q:"" } — 같은 항목 안은 OR, 항목끼리는 AND
+     tier 는 정확 일치(차트에서 넘어올 때), minTier 는 "이상" 범위 */
+  function filterHeroes(list, f) {
+    f = f || {};
+    var q = (f.q || "").trim().toLowerCase(), min = f.minTier ? tierScore(f.minTier) : 0;
+    return list.filter(function (h) {
+      if (f.tier && f.tier.length && f.tier.indexOf(h.tier) < 0) return false;
+      if (f.rarity && f.rarity.length && f.rarity.indexOf(h.rarity) < 0) return false;
+      if (f.cls && f.cls.length && f.cls.indexOf(h.class) < 0) return false;
+      if (f.role && f.role.length && f.role.indexOf(h.role) < 0) return false;
+      if (min && tierScore(h.tier) < min) return false;
+      if (q && (h.name + " " + h.note).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+
+  function byName(a, b) { return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; }
+  function sortHeroes(list, key) {
+    return list.slice().sort(function (a, b) {
+      var c = 0;
+      if (key === "tier") c = tierScore(b.tier) - tierScore(a.tier) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity);
+      else if (key === "rarity") c = RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || tierScore(b.tier) - tierScore(a.tier);
+      return c || byName(a, b);
+    });
+  }
+
+  /* 티어 × 병종 그룹: { "S+": { 보병:[...], 전차:[...], 헬기:[...] }, ... } */
+  function tierGrid(list) {
+    var g = {};
+    TIER_ORDER.forEach(function (t) { g[t] = {}; CLASSES.forEach(function (c) { g[t][c] = []; }); });
+    sortHeroes(list, "rarity").forEach(function (h) { if (g[h.tier] && g[h.tier][h.class]) g[h.tier][h.class].push(h); });
+    return g;
+  }
+
+  function countBy(list, key, keys) {
+    var o = {}; keys.forEach(function (k) { o[k] = 0; });
+    list.forEach(function (h) { if (h[key] in o) o[h[key]]++; });
+    return o;
+  }
+  /* 행 키 × 열 키 교차 집계 */
+  function crossTab(list, rowKey, rowKeys, colKey, colKeys) {
+    var o = {};
+    rowKeys.forEach(function (r) { o[r] = countBy(list.filter(function (h) { return h[rowKey] === r; }), colKey, colKeys); });
+    return o;
+  }
+  function avgTierByClass(list) {
+    var o = {};
+    CLASSES.forEach(function (c) {
+      var hs = list.filter(function (h) { return h.class === c; });
+      var s = hs.reduce(function (a, h) { return a + tierScore(h.tier); }, 0);
+      o[c] = hs.length ? Math.round(s / hs.length * 100) / 100 : 0;
+    });
+    return o;
+  }
+  function related(list, hero) {
+    return sortHeroes(list.filter(function (h) { return h.name !== hero.name && h.class === hero.class && h.tier === hero.tier; }), "rarity");
+  }
+  function validate(list) {
+    var errs = [], seen = {};
+    list.forEach(function (h) {
+      if (seen[h.name]) errs.push("중복: " + h.name); seen[h.name] = 1;
+      if (RARITY_ORDER.indexOf(h.rarity) < 0) errs.push(h.name + " rarity");
+      if (CLASSES.indexOf(h.class) < 0) errs.push(h.name + " class");
+      if (ROLES.indexOf(h.role) < 0) errs.push(h.name + " role");
+      if (TIER_ORDER.indexOf(h.tier) < 0) errs.push(h.name + " tier");
+      if (!h.note) errs.push(h.name + " note");
+    });
+    return errs;
+  }
+
+  return { TIER_ORDER: TIER_ORDER, RARITY_ORDER: RARITY_ORDER, CLASSES: CLASSES, ROLES: ROLES,
+    tierScore: tierScore, filterHeroes: filterHeroes, sortHeroes: sortHeroes, tierGrid: tierGrid,
+    countBy: countBy, crossTab: crossTab, avgTierByClass: avgTierByClass, related: related, validate: validate };
+})();
+/* LOGIC-END */
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var SRC = JSON.parse($("#hero-data").textContent);
+  var HEROES = SRC.heroes;
+  var BY_NAME = {}; HEROES.forEach(function (h) { BY_NAME[h.name] = h; });
+
+  var ICON = {
+    "보병": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="6" r="3"/><path d="M6 21v-5a6 6 0 0 1 12 0v5M12 13v8"/></svg>',
+    "전차": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="13" width="18" height="6" rx="3"/><path d="M7 13V9h8v4M15 10h6"/></svg>',
+    "헬기": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 5h18M12 5v4"/><path d="M5 13a5 4 0 0 1 10 0v2H5z"/><path d="M15 13h6M8 18h6"/></svg>'
+  };
+  function tierCls(t) { var s = Logic.tierScore(t); return s >= 7 ? "t1" : s >= 5 ? "t2" : s >= 3 ? "t3" : "t4"; }
+  function rar(r) { return '<span class="rar rar-' + r + '">' + r + "</span>"; }
+  function tier(t) { return '<span class="tier ' + tierCls(t) + '">' + esc(t) + "</span>"; }
+  function cls(c) { return '<span class="cls">' + ICON[c] + c + "</span>"; }
+  function hchip(h, dim) {
+    return '<button type="button" class="hchip rar-' + h.rarity + (dim ? " dim" : "") + '" data-hero="' + esc(h.name) + '"><b>' + h.rarity + "</b><span>" + esc(h.name) + "</span></button>";
+  }
+
+  /* ── 상태 ── */
+  var F = { rarity: [], cls: [], role: [], tier: [], minTier: "", q: "", sort: "tier", layout: "cards" };
+  function clearFilters() { F.rarity = []; F.cls = []; F.role = []; F.tier = []; F.minTier = ""; F.q = ""; }
+  var tierRarity = [];
+  var animated = {};
+
+  /* ── ① 영웅 도감 ── */
+  function chips(group, values, labels) {
+    return values.map(function (v, i) {
+      return '<button type="button" class="chip" data-group="' + group + '" data-value="' + esc(v) + '" aria-pressed="' + (F[group].indexOf(v) >= 0) + '">' + esc(labels ? labels[i] : v) + "</button>";
+    }).join("");
+  }
+  function renderHeroes(app) {
+    app.innerHTML =
+      '<section class="panel filters" aria-label="필터">' +
+        '<div class="frow"><span class="flabel">등급</span>' + chips("rarity", Logic.RARITY_ORDER) + "</div>" +
+        '<div class="frow"><span class="flabel">병종</span>' + chips("cls", Logic.CLASSES) + "</div>" +
+        '<div class="frow"><span class="flabel">역할</span>' + chips("role", Logic.ROLES) + "</div>" +
+        '<div class="frow"><span class="flabel">티어</span><select id="f-min" aria-label="최소 티어"><option value="">전체</option>' +
+          Logic.TIER_ORDER.map(function (t) { return '<option value="' + t + '"' + (F.minTier === t ? " selected" : "") + ">" + t + (t === "D" ? "" : " 이상") + "</option>"; }).join("") +
+          '</select>' + (F.tier.length ? '<button type="button" class="chip" id="f-exact" aria-pressed="true" aria-label="티어 ' + esc(F.tier.join(", ")) + ' 조건 해제">티어 ' + esc(F.tier.join(", ")) + "만 ✕</button>" : "") +
+          '<input id="f-q" type="search" placeholder="이름 또는 특징 검색 (예: 몬스터)" value="' + esc(F.q) + '" aria-label="검색">' +
+          '<button class="btn" id="f-reset" type="button">초기화</button></div>' +
+      "</section>" +
+      '<section class="panel"><div class="panel-head"><div class="frow">' +
+          '<label class="sub" for="f-sort">정렬</label><select id="f-sort"><option value="tier">티어순</option><option value="rarity">등급순</option><option value="name">이름순</option></select>' +
+          '<div class="seg" role="group" aria-label="보기 방식"><button type="button" data-layout="cards" aria-pressed="' + (F.layout === "cards") + '">카드</button><button type="button" data-layout="table" aria-pressed="' + (F.layout === "table") + '">표</button></div>' +
+        '</div><span class="count" id="h-count"></span></div><div id="h-list"></div></section>';
+    $("#f-sort").value = F.sort;
+    list();
+    if ($("#f-exact")) $("#f-exact").addEventListener("click", function () { F.tier = []; renderHeroes(app); });
+    $$(".chip[data-group]", app).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var arr = F[b.dataset.group], v = b.dataset.value, i = arr.indexOf(v);
+        if (i >= 0) arr.splice(i, 1); else arr.push(v);
+        b.setAttribute("aria-pressed", i < 0); list();
+      });
+    });
+    $("#f-min").addEventListener("change", function (e) { F.minTier = e.target.value; list(); });
+    $("#f-q").addEventListener("input", function (e) { F.q = e.target.value; list(); });
+    $("#f-sort").addEventListener("change", function (e) { F.sort = e.target.value; list(); });
+    $("#f-reset").addEventListener("click", function () { clearFilters(); renderHeroes(app); });
+    $$(".seg button", app).forEach(function (b) { b.addEventListener("click", function () { F.layout = b.dataset.layout; renderHeroes(app); }); });
+  }
+  function list() {
+    var rows = Logic.sortHeroes(Logic.filterHeroes(HEROES, F), F.sort);
+    $("#h-count").textContent = rows.length + "명 / 전체 " + HEROES.length + "명";
+    var box = $("#h-list");
+    if (!rows.length) { box.innerHTML = '<div class="empty">조건에 맞는 영웅이 없습니다. 필터를 줄이거나 초기화해 보세요.</div>'; return; }
+    if (F.layout === "cards") {
+      box.innerHTML = '<div class="cards">' + rows.map(function (h) {
+        return '<button type="button" class="card" data-hero="' + esc(h.name) + '">' +
+          '<div class="top"><div class="av rar-' + h.rarity + '">' + esc(h.name[0]) + '</div><div><div class="name">' + esc(h.name) + '</div><div class="meta">' + rar(h.rarity) + cls(h.class) + '<span class="cls">· ' + h.role + "</span></div></div>" + tier(h.tier) + "</div>" +
+          '<div class="note">' + esc(h.note) + "</div></button>";
+      }).join("") + "</div>";
+    } else {
+      box.innerHTML = '<div class="table-scroll"><table><thead><tr><th>이름</th><th>등급</th><th>병종</th><th>역할</th><th>티어</th><th>특징</th></tr></thead><tbody>' +
+        rows.map(function (h) {
+          return '<tr data-hero="' + esc(h.name) + '" tabindex="0"><td><b>' + esc(h.name) + "</b></td><td>" + rar(h.rarity) + "</td><td>" + cls(h.class) + "</td><td>" + h.role + "</td><td>" + tier(h.tier) + "</td><td>" + esc(h.note) + "</td></tr>";
+        }).join("") + "</tbody></table></div>";
+    }
+  }
+
+  /* ── ② 티어표 ── */
+  function renderTiers(app) {
+    var g = Logic.tierGrid(HEROES);
+    var dim = function (h) { return tierRarity.length && tierRarity.indexOf(h.rarity) < 0; };
+    var m = '<div class="corner"></div>' + Logic.CLASSES.map(function (c) { return '<div class="mh">' + cls(c) + "</div>"; }).join("");
+    Logic.TIER_ORDER.forEach(function (t) {
+      m += '<div class="mh mt">' + tier(t) + "</div>";
+      Logic.CLASSES.forEach(function (c) { m += "<div>" + g[t][c].map(function (h) { return hchip(h, dim(h)); }).join("") + "</div>"; });
+    });
+    var mobile = Logic.CLASSES.map(function (c) {
+      return "<div><h3>" + cls(c) + "</h3>" + Logic.TIER_ORDER.filter(function (t) { return g[t][c].length; }).map(function (t) {
+        return '<div class="tl-row">' + tier(t) + "<div>" + g[t][c].map(function (h) { return hchip(h, dim(h)); }).join("") + "</div></div>";
+      }).join("") + "</div>";
+    }).join("");
+    app.innerHTML = '<section class="panel"><div class="panel-head"><h2>티어 × 병종</h2>' +
+      '<div class="frow"><span class="sub">등급 강조</span>' + Logic.RARITY_ORDER.map(function (r) {
+        return '<button type="button" class="chip" data-tr="' + r + '" aria-pressed="' + (tierRarity.indexOf(r) >= 0) + '">' + r + "</button>";
+      }).join("") + "</div></div>" +
+      '<div class="matrix-scroll"><div class="matrix">' + m + '</div></div><div class="tier-list">' + mobile + "</div>" +
+      '<p class="sub" style="margin:12px 0 0">칩 테두리 색은 등급(UR·SSR·SR)입니다. 영웅을 누르면 상세 정보가 열립니다.</p></section>';
+    $$("[data-tr]", app).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = b.dataset.tr, i = tierRarity.indexOf(r);
+        if (i >= 0) tierRarity.splice(i, 1); else tierRarity.push(r);
+        renderTiers(app);
+      });
+    });
+  }
+
+  /* ── ③ 분포 차트 ── */
+  function renderStats(app) {
+    var anim = !animated.stats && !REDUCED; animated.stats = true;
+    var rc = Logic.countBy(HEROES, "rarity", Logic.RARITY_ORDER);
+    var byClass = Logic.crossTab(HEROES, "class", Logic.CLASSES, "rarity", Logic.RARITY_ORDER);
+    var byTier = Logic.crossTab(HEROES, "tier", Logic.TIER_ORDER, "rarity", Logic.RARITY_ORDER);
+    var roles = Logic.countBy(HEROES, "role", Logic.ROLES);
+    var avg = Logic.avgTierByClass(HEROES);
+    var n = HEROES.length;
+
+    function stack(rows, keyName, max) {
+      return '<div class="sbars">' + Object.keys(rows).map(function (k) {
+        var r = rows[k], tot = Logic.RARITY_ORDER.reduce(function (a, x) { return a + r[x]; }, 0);
+        var label = keyName === "tier" ? tier(k) : cls(k);
+        return '<div class="sbar">' + label + '<div class="strack">' + Logic.RARITY_ORDER.filter(function (x) { return r[x]; }).map(function (x) {
+          return '<button type="button" class="sseg seg-' + x + '" style="width:' + (r[x] / max * 100) + '%" data-grow data-' + keyName + '="' + esc(k) + '" data-rarity="' + x + '" title="' + esc(k) + " · " + x + " " + r[x] + '명" aria-label="' + esc(k) + " " + x + " " + r[x] + '명, 도감에서 보기"></button>';
+        }).join("") + '</div><span class="num">' + tot + "</span></div>";
+      }).join("") + "</div>";
+    }
+    var legend = '<div class="legend">' + Logic.RARITY_ORDER.map(function (x) { return '<span><i class="seg-' + x + '"></i>' + x + "</span>"; }).join("") + "<span>막대를 누르면 도감에서 해당 영웅을 봅니다</span></div>";
+    var maxClass = Math.max.apply(null, Logic.CLASSES.map(function (c) { return Logic.RARITY_ORDER.reduce(function (a, x) { return a + byClass[c][x]; }, 0); }));
+    var maxTier = Math.max.apply(null, Logic.TIER_ORDER.map(function (t) { return Logic.RARITY_ORDER.reduce(function (a, x) { return a + byTier[t][x]; }, 0); }));
+
+    var R = 52, C = 2 * Math.PI * R, acc = 0, rcol = { "공격": "var(--r-ur)", "방어": "var(--accent)", "버프": "var(--r-ssr)" };
+    var arcs = Logic.ROLES.map(function (r) {
+      var len = roles[r] / n * C, s = '<circle class="arc" cx="75" cy="75" r="' + R + '" stroke="' + rcol[r] + '" stroke-dasharray="' + (anim ? "0 " + C : len + " " + (C - len)) + '" data-dash="' + len + " " + (C - len) + '" stroke-dashoffset="' + (-acc) + '" transform="rotate(-90 75 75)" data-role="' + r + '"><title>' + r + " " + roles[r] + "명</title></circle>";
+      acc += len; return s;
+    }).join("");
+
+    app.innerHTML =
+      '<section class="kpis" aria-label="요약">' +
+        '<div class="kpi"><div class="l">전체 영웅</div><div class="v"><span data-count="' + n + '">' + n + "</span><small>명</small></div></div>" +
+        Logic.RARITY_ORDER.map(function (x) { return '<div class="kpi"><div class="l">' + rar(x) + '</div><div class="v"><span data-count="' + rc[x] + '">' + rc[x] + "</span><small>명</small></div></div>"; }).join("") +
+        '<div class="kpi"><div class="l">S+ 티어</div><div class="v"><span data-count="' + Logic.filterHeroes(HEROES, { minTier: "S+" }).length + '">' + Logic.filterHeroes(HEROES, { minTier: "S+" }).length + "</span><small>명</small></div></div>" +
+      "</section>" +
+      '<div class="grid-2">' +
+        '<section class="panel"><div class="panel-head"><h2>병종별 등급 구성</h2><span class="sub">단위: 명</span></div>' + stack(byClass, "cls", maxClass) + legend + "</section>" +
+        '<section class="panel"><div class="panel-head"><h2>티어 분포</h2><span class="sub">S+ → D, 등급별 누적</span></div>' + stack(byTier, "tier", maxTier) + legend + "</section>" +
+        '<section class="panel"><div class="panel-head"><h2>역할 비율</h2><span class="sub">출처 분류 기준</span></div><div class="donut-wrap"><svg class="donut" viewBox="0 0 150 150" role="img" aria-label="역할 비율"><circle cx="75" cy="75" r="' + R + '" fill="none" stroke="var(--surface-2)" stroke-width="20"></circle>' + arcs +
+          '<text x="75" y="80" text-anchor="middle" font-size="22" font-weight="700">' + n + '명</text></svg><div class="rlist">' +
+          Logic.ROLES.map(function (r) { return '<button type="button" data-role="' + r + '"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + rcol[r] + '"></i>' + r + ' <b class="num">' + roles[r] + '</b><span class="sub">' + Math.round(roles[r] / n * 100) + "%</span></button>"; }).join("") +
+        "</div></div></section>" +
+        '<section class="panel"><div class="panel-head"><h2>병종별 평균 티어 점수</h2><span class="sub">S+=8 · S=7 · A+=6 · A=5 · B+=4 · B=3 · C+=2 · D=1</span></div><div class="avg">' +
+          Logic.CLASSES.map(function (c) { return '<div class="avg-row">' + cls(c) + '<div class="avg-track"><div class="avg-fill" data-grow style="width:' + (avg[c] / 8 * 100) + '%"></div></div><b class="num">' + avg[c].toFixed(2) + "</b></div>"; }).join("") +
+          '<div class="scale"><div></div><div><span>0</span><span>4</span><span>8</span></div><div></div></div>' +
+        "</div></section>" +
+      "</div>";
+
+    if (anim) {
+      $$("[data-grow]", app).forEach(function (el) { el.style.transform = "scaleX(0)"; });
+      $$("[data-count]", app).forEach(function (el) {
+        var to = +el.dataset.count, t0 = performance.now();
+        (function step(now) { var k = Math.min(1, (now - t0) / 600); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); })(t0);
+      });
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        $$("[data-grow]", app).forEach(function (el) { el.style.transform = ""; });
+        $$("circle[data-dash]", app).forEach(function (c) { c.setAttribute("stroke-dasharray", c.dataset.dash); });
+      }); });
+    }
+    app.addEventListener("click", function (e) {
+      var t = e.target.closest("[data-rarity],[data-role]"); if (!t) return;
+      clearFilters();
+      if (t.dataset.rarity) F.rarity = [t.dataset.rarity];
+      if (t.dataset.cls) F.cls = [t.dataset.cls];
+      if (t.dataset.role) F.role = [t.dataset.role];
+      if (t.dataset.tier) F.tier = [t.dataset.tier];
+      location.hash = "#heroes";
+    });
+  }
+
+  /* ── 상세 패널 ── */
+  var lastFocus = null;
+  function openDetail(name) {
+    var h = BY_NAME[name]; if (!h) return;
+    lastFocus = document.activeElement;
+    var rel = Logic.related(HEROES, h);
+    $("#detail-root").innerHTML = '<div class="scrim" data-close></div><aside class="detail" role="dialog" aria-modal="true" aria-label="' + esc(h.name) + ' 상세">' +
+      '<button type="button" class="btn close" data-close>닫기 ✕</button>' +
+      '<div style="display:flex;gap:12px;align-items:center"><div class="av rar-' + h.rarity + '" style="width:56px;height:56px;font-size:24px">' + esc(h.name[0]) + '</div><div><div class="dname">' + esc(h.name) + "</div>" + rar(h.rarity) + "</div></div>" +
+      '<dl class="dl"><dt>티어</dt><dd>' + tier(h.tier) + "</dd><dt>병종</dt><dd>" + cls(h.class) + "</dd><dt>역할</dt><dd>" + h.role + "</dd></dl>" +
+      '<div class="dnote">' + esc(h.note) + "</div>" +
+      '<div><div class="sub" style="margin-bottom:6px">같은 병종 · 같은 티어</div><div class="related">' + (rel.length ? rel.map(function (x) { return hchip(x); }).join("") : '<span class="sub">없음</span>') + "</div></div>" +
+      '<p class="sub" style="margin:0">출처: AllClash 티어 목록 (2026-11-08 갱신). 공식 데이터가 아닙니다.</p></aside>';
+    $(".detail .close").focus();
+  }
+  function closeDetail() { $("#detail-root").innerHTML = ""; if (lastFocus && lastFocus.isConnected) lastFocus.focus(); }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-close]")) { closeDetail(); return; }
+    var h = e.target.closest("[data-hero]"); if (h) openDetail(h.dataset.hero);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && $(".detail")) closeDetail();
+    if (e.key === "Enter" && e.target.matches("tr[data-hero]")) openDetail(e.target.dataset.hero);
+  });
+
+  /* ── 라우팅 ── */
+  var VIEWS = { heroes: renderHeroes, tiers: renderTiers, stats: renderStats };
+  function route() {
+    var v = (location.hash || "").slice(1); if (!VIEWS[v]) v = "heroes";
+    $$(".tabs a").forEach(function (a) { if (a.dataset.view === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    var app = $("#app"), wrap = document.createElement("div"); wrap.className = "view";
+    app.innerHTML = ""; app.appendChild(wrap);
+    VIEWS[v](wrap);
+  }
+  window.addEventListener("hashchange", route);
+
+  /* ── 다크모드 ── */
+  function isDark() { var t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+  function paint() { $("#theme-toggle").textContent = isDark() ? "☀️ 라이트" : "🌙 다크"; }
+  try { var s = localStorage.getItem("topforce-theme"); if (s) document.documentElement.setAttribute("data-theme", s); } catch (e) {}
+  $("#theme-toggle").addEventListener("click", function () {
+    var n = isDark() ? "light" : "dark"; document.documentElement.setAttribute("data-theme", n);
+    try { localStorage.setItem("topforce-theme", n); } catch (e) {}
+    paint();
+  });
+
+  paint(); route();
+})();
+</script>
